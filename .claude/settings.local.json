@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install *)",
+      "Bash(uv *)",
+      "Bash(python -c \"import torch; print\\('PyTorch build:', torch.__config__.show\\(\\)\\)\")",
+      "Bash(curl *)",
+      "Bash(netstat -ano)",
+      "Bash(findstr \":9001\")",
+      "Bash(pip list *)",
+      "Bash(.venv/Scripts/pip list *)",
+      "Bash(.venv/Scripts/python -c \"import pymilvus; print\\('pymilvus 版本:', pymilvus.__version__\\)\")",
+      "Bash(.venv/Scripts/python -c \"import pymilvus.model; print\\('pymilvus-model 可用'\\)\")",
+      "Bash(docker *)",
+      "Bash(Restart-Service docker *)",
+      "Bash(net stop *)",
+      "Bash(net start *)",
+      "Bash(powershell *)",
+      "Bash(findstr \"Registry Mirrors\")"
+    ]
+  }
+}
