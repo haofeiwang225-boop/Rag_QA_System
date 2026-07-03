@@ -56,9 +56,9 @@ def step_1_get_content(state: ImportGraphState) -> Tuple[str, Path, Path]:
     path_obj = Path(md_file_path)
     # 优先使用状态中已存在的MD内容，无则从文件读取
     if not state["md_content"]: #证明是pdf
-        with open(path_obj, "r", encoding="utf-8") as f:
-            md_content = f.read()
-        logger.debug(f"从文件读取MD内容完成，文件大小：{len(md_content)} 字符")
+        with path_obj.open("r", encoding="utf-8") as f:
+            state["md_content"] = f.read()
+
     else:
         md_content = state["md_content"]
         logger.debug(f"从全局状态获取MD内容完成，内容大小：{len(md_content)} 字符")

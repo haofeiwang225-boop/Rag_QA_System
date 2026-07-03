@@ -1,8 +1,6 @@
 ﻿# Python
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
 .venv/
 venv/
 env/
@@ -11,23 +9,23 @@ env/
 .idea/
 .vscode/
 
-# Environment / secrets
+# secrets
 .env
 .env.*
 *.key
 *.pem
 secrets.*
 config.local.*
-application-local.yml
 
-# Logs / outputs / temp
+# logs / outputs
 logs/
+output/
 outputs/
 temp/
 tmp/
 *.log
 
-# Data
+# data
 data/
 uploads/
 storage/
@@ -35,7 +33,7 @@ storage/
 *.sqlite
 *.sqlite3
 
-# Models / weights
+# models / large files
 models/
 checkpoints/
 weights/
@@ -43,14 +41,18 @@ weights/
 *.pth
 *.bin
 *.safetensors
+*.zip
+*.rar
+*.7z
 
-# RAG services data
-minio_data/
+# database / middleware local data
+mysql_data/
+mongo_data/
 milvus_data/
 neo4j_data/
-mongo_data/
+minio_data/
 
-# Frontend
+# frontend
 node_modules/
 dist/
 build/
@@ -58,15 +60,4 @@ build/
 # OS
 .DS_Store
 Thumbs.db
-
-output/
-
 nul
-
-output/
-
-# large local documents
-
-doc/*.zip
-
-*.zip
