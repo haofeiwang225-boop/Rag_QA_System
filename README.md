@@ -89,6 +89,15 @@ git commit -m "Update import process"
 git push
 
 
+以后你修改完代码，就执行：
+
+git status
+git add .
+git status
+git commit -m "Update code"
+git push
+
+
 如果只是删除了文件
 
 删除文件后执行：

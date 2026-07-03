@@ -32,13 +32,17 @@ def node_entry(state: ImportGraphState) -> ImportGraphState:
 
     state['file_title'] = file_title
 
-    if local_file_path.endswith('.pdf'):
+    file_suffix = Path(local_file_path).suffix.lower()
+
+    if file_suffix == '.pdf':
         state['is_pdf_read_enabled'] = True
         state['is_md_read_enabled'] = False
-        state['md_path'] = local_file_path
-    elif local_file_path.endswith('.md'):
+        state['pdf_path'] = local_file_path
+        state['md_path'] = ""
+    elif file_suffix == '.md':
         state['is_pdf_read_enabled'] = False
         state['is_md_read_enabled'] = True
+        state['pdf_path'] = ""
         state['md_path'] = local_file_path
     else:
         logger.error(f"[{function_name}不是md 或者 pdf,无法解析]")

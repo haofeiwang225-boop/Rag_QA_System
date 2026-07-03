@@ -57,7 +57,8 @@ def step_1_get_content(state: ImportGraphState) -> Tuple[str, Path, Path]:
     # 优先使用状态中已存在的MD内容，无则从文件读取
     if not state["md_content"]: #证明是pdf
         with path_obj.open("r", encoding="utf-8") as f:
-            state["md_content"] = f.read()
+            md_content = f.read()
+            state["md_content"] = md_content
 
     else:
         md_content = state["md_content"]
@@ -104,6 +105,10 @@ def step_2_scan_images(md_content, images_dir_obj:Path) :
     :param images_dir: 图片文件夹路径对象
     :return: 待处理图片列表，每个元素为(图片文件名, 图片完整路径, 图片上下文)元组
     """
+
+    if not images_dir_obj.exists():
+        logger.info(f"图片目录不存在，跳过图片处理：{images_dir_obj}")
+        return targets
 
     for image_file in os.listdir(images_dir_obj):
         # 过滤非支持格式的图片
