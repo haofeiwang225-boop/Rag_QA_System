@@ -64,7 +64,36 @@ python main.py
 你在 PyCharm 改完 `README.md` 后，执行：
 
 ```powershell
+查看改了哪些文件   git status  git diff  查看具体改动，可选但推荐  按q退出
+推荐你指定文件添加   eg git add app/import_process/agent/main_graph.py
+                    git add app/import_process/agent/nodes/node_import_milvus.py
+                    git add app/import_process/api/
+                    git add test/test_fastapi.py
+                    
+确认暂存区   git status  
+确认没有
+.env
+data/
+models/
+logs/
+*.pt
+*.pth
+*.bin
+*.safetensors
+node_modules/
+
+提交
+git commit -m "Update import process"
+
+上传到 GitHub
+git push
+
+
+如果只是删除了文件
+
+删除文件后执行：
+
 git status
-git add README.md
-git commit -m "Update README for RAG QA system"
+git add -u
+git commit -m "Remove unused files"
 git push
