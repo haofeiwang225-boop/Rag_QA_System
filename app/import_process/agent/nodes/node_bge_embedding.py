@@ -3,7 +3,7 @@ import os
 from typing import Any, List, Dict
 
 from app.import_process.agent.state import ImportGraphState
-from app.lm.embedding_utils import get_bge_m3_ef, generate_embeddings
+from app.lm.embedding_utils import generate_embeddings
 from app.utils.task_utils import add_running_task,add_done_task
 from app.core.logger import logger
 
@@ -65,8 +65,8 @@ def node_bge_embedding(state: ImportGraphState) -> ImportGraphState:
             batch_items = chunks[i:i + batch_size]
             current_text = []
             for item in batch_items:
-                item_name = item.get("name")
-                item_context = item.get("context")
+                item_name = item.get("item_name") or state.get("item_name", "")
+                item_context = item.get("content", "")
                 item_text = f"商品{item_name},内容介绍{item_context}"
                 current_text.append(item_text)
 
@@ -77,6 +77,9 @@ def node_bge_embedding(state: ImportGraphState) -> ImportGraphState:
                 chunk_item["dense_vector"] = result["dense"][i]
                 chunk_item["sparse_vector"] = result["sparse"][i]
                 final_chunks.append(chunk_item)
+
+        state["chunks"] = final_chunks
+        logger.info(f"BGE-M3向量化完成，共处理{len(final_chunks)}个切片")
 
     except Exception as e:
         # 捕获节点所有异常，记录错误堆栈，不中断整体流程

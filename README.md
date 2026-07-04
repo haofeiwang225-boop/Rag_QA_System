@@ -94,6 +94,7 @@ git push
 git status
 git add .
 git status
+git diff --cached --name-only
 git commit -m "Update code"
 git push
 

@@ -62,6 +62,9 @@ def step_1_get_content(state: ImportGraphState) -> Tuple[str, Path, Path]:
 
     else:
         md_content = state["md_content"]
+        if isinstance(md_content, bytes):
+            md_content = md_content.decode("utf-8", errors="replace")
+            state["md_content"] = md_content
         logger.debug(f"从全局状态获取MD内容完成，内容大小：{len(md_content)} 字符")
 
     # 图片文件夹固定为MD文件同级的images目录
@@ -173,7 +176,7 @@ def summarize_image(image_path, root_folder, image_content):
             )
         ]
 
-        response = lvm_client.invoke(messages=messages)
+        response = lvm_client.invoke(messages)
         # 4. 解析响应（LangChain统一返回content字段，统一格式无需多层解析）
         summary = response.content.strip().replace("\n", "")
         logger.info(f"图片摘要生成成功：{image_path}，摘要：{summary}")

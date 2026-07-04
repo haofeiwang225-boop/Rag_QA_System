@@ -8,6 +8,7 @@ import uvicorn
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.responses import RedirectResponse
 from starlette.background import BackgroundTask
 
 # 项目内部工具/配置/客户端
@@ -43,6 +44,10 @@ app.add_middleware(
 
 
 #访问页面
+@app.get("/")
+async def index():
+    return RedirectResponse(url="/import")
+
 
 @app.get("/import", response_class=FileResponse)
 async def get_import_page():
@@ -152,5 +157,5 @@ async def get_task_progress(task_id: str):
     return task_status_info
 
 if __name__ == '__main__':
-    uvicorn.run(app, host="127.0.0.1", port=8009)
+    uvicorn.run(app, host="127.0.0.1", port=8010)
 

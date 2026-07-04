@@ -34,7 +34,7 @@ def node_pdf_to_md(state: ImportGraphState) -> ImportGraphState:
         state['md_path'] = md_path
         state['local_dir'] = local_dir_obj
 
-        with open(state["md_path"], 'rb') as f:
+        with open(state["md_path"], "r", encoding="utf-8") as f:
             state['md_content'] = f.read()
     except Exception as e:
         logger.error(f">>>[{function_name}]使用mineru解析发生异常: {e}")

@@ -104,6 +104,13 @@ def step_3_del_old_data(milvus_client, item_name):
 
 
 def step_4_insert_collection(milvus_client, chunks):
+    missing_vector_indexes = [
+        index for index, chunk in enumerate(chunks)
+        if "dense_vector" not in chunk or "sparse_vector" not in chunk
+    ]
+    if missing_vector_indexes:
+        raise ValueError(f"以下切片缺少向量字段，无法入库：{missing_vector_indexes}")
+
     insert_result= milvus_client.insert(collection_name=milvus_config.chunks_collection, data=chunks)
     milvus_client.flush(collection_name=milvus_config.chunks_collection)
 
