@@ -34,9 +34,16 @@ class HistoryMongoTool:
             self.mongo_url = os.getenv("MONGO_URL")
             # 从环境变量读取要使用的数据库名称
             self.db_name = os.getenv("MONGO_DB_NAME")
+            if not self.mongo_url or not self.db_name:
+                raise RuntimeError("MONGO_URL or MONGO_DB_NAME is not configured")
 
             # 创建MongoDB客户端实例，建立与数据库的连接
-            self.client = MongoClient(self.mongo_url)
+            self.client = MongoClient(
+                self.mongo_url,
+                serverSelectionTimeoutMS=1500,
+                connectTimeoutMS=1500,
+                socketTimeoutMS=1500,
+            )
             # 获取指定名称的数据库对象
             self.db = self.client[self.db_name]
             # 获取对话记录的集合（相当于关系型数据库的表），集合名：chat_message
@@ -51,7 +58,7 @@ class HistoryMongoTool:
             logging.info(f"Successfully connected to MongoDB: {self.db_name}")
         except Exception as e:
             # 捕获所有初始化异常，记录详细错误日志
-            logging.error(f"Failed to connect to MongoDB: {e}")
+            logging.warning(f"Failed to connect to MongoDB: {e}")
             # 重新抛出异常，让调用方感知初始化失败，避免使用未初始化的实例
             raise
 
@@ -62,7 +69,7 @@ _history_mongo_tool = None
 # 模块加载时尝试初始化单例实例，实现预加载
 # 目的：将数据库连接的初始化提前到模块加载阶段，避免第一次调用接口时才建立连接（提升首次响应速度）
 try:
-    _history_mongo_tool = HistoryMongoTool()
+    _history_mongo_tool = None
 except Exception as e:
     # 初始化失败时仅记录警告日志，不抛出异常
     # 原因：模块加载阶段的异常可能导致整个程序启动失败，此处保留懒加载兜底（get_history_mongo_tool会再次尝试创建）

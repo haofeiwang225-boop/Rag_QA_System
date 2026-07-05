@@ -55,4 +55,9 @@ async def stream_result(session_id: str):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=8001)
+    config = uvicorn.Config(app, host="127.0.0.1", port=8002)
+    server = uvicorn.Server(config)
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(server.serve())

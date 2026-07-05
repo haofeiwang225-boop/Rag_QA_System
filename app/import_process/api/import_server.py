@@ -114,7 +114,7 @@ def run_import_graph(task_id:str, local_file_path:str ,local_dir_path:str):
         init_state["local_file_path"] = local_file_path
         init_state["local_dir"] = local_dir_path
 
-        for event in kb_import_app.stream(init_state):
+        for event in kb_import_app.invoke(init_state):
             for node_name,result in event.items():
                 logger.info(f"{node_name}:完成,结果为{result}")
                 add_done_task(task_id, node_name)
