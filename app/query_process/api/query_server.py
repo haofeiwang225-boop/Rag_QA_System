@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from starlette.middleware.cors import CORSMiddleware
 from loguru import logger
 
+from app.clients.mongo_history_utils import get_recent_messages, clear_history
 from app.query_process.agent.main_graph import query_app
 from app.query_process.agent.state import create_query_default_state
 from app.utils.path_util import PROJECT_ROOT
@@ -148,6 +149,23 @@ async def stream(request: Request, session_id: str):
         media_type="text/event-stream",
     )
 
+
+@app.get('/history/{session_id}')
+async def history(session_id: str, limit: int = 10):
+    chats = get_recent_messages(session_id, limit=limit)
+
+    return {
+        "session_id": session_id,
+        "items": chats
+    }
+
+@app.delete('/history/{session_id}')
+async def delete_history(session_id: str):
+    delete_count = clear_history(session_id)
+    return {
+        "message": f"{session_id}已删除",
+        "deleted": delete_count
+    }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8008)
