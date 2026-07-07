@@ -1,7 +1,11 @@
-# Milvus standalone for local development.
-# App connection URI: http://localhost:19530
+# 项目本地依赖服务。
+# 在项目根目录执行 `docker compose up -d` 时，只会启动本文件 services 下定义的服务。
+# 容器名默认格式是：当前目录名-服务名-编号，例如 dataset_rag-mongo-1。
 
 services:
+  # etcd 是 Milvus 的元数据存储。
+  # Milvus 会把 collection、索引、分片等管理信息记录到 etcd。
+  # 你的 Python 代码通常不直接连接 etcd，它主要给 milvus-standalone 使用。
   etcd:
     image: quay.io/coreos/etcd:v3.5.18
     environment:
@@ -10,6 +14,7 @@ services:
       ETCD_QUOTA_BACKEND_BYTES: "4294967296"
       ETCD_SNAPSHOT_COUNT: "50000"
     volumes:
+      # 保存 etcd 数据，避免容器重建后 Milvus 元数据丢失。
       - etcd_data:/etcd
     command: >
       etcd
@@ -22,13 +27,24 @@ services:
       timeout: 20s
       retries: 3
 
+  # MinIO 是对象存储，类似本地版 S3。
+  # Milvus 会用它保存向量索引/段文件等对象数据。
+  # 项目导入文件时，也可以用 MinIO 存 PDF、图片、Markdown 等文件资源。
   minio:
     image: quay.io/minio/minio:latest
     environment:
+      # MinIO 管理员账号密码。
+      # 浏览器控制台默认地址通常是 http://127.0.0.1:9001
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     volumes:
+      # 保存 MinIO 对象文件，避免容器重建后文件丢失。
       - minio_data:/minio_data
+    ports:
+      # MinIO S3 API 端口，项目代码/SDK 连接对象存储时使用。
+      - "9000:9000"
+      # MinIO 浏览器控制台端口，打开 http://127.0.0.1:9001 查看文件。
+      - "9001:9001"
     command: minio server /minio_data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -36,16 +52,23 @@ services:
       timeout: 20s
       retries: 3
 
+  # Milvus 是向量数据库。
+  # 你的项目把文档切片向量、商品名向量写入 Milvus，然后查询时做相似度检索。
   milvus-standalone:
     image: milvusdb/milvus:v2.5.13
     command: ["milvus", "run", "standalone"]
     environment:
+      # Milvus 在 Docker 内部通过服务名访问 etcd 和 MinIO。
       ETCD_ENDPOINTS: etcd:2379
       MINIO_ADDRESS: minio:9000
     volumes:
+      # 保存 Milvus 本地数据。
       - milvus_data:/var/lib/milvus
     ports:
+      # Python/pymilvus 连接地址：localhost:19530
+      # .env 中 MILVUS_URL=http://localhost:19530 就是连这个端口。
       - "19530:19530"
+      # Milvus 健康检查/监控端口。
       - "9091:9091"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
@@ -54,16 +77,21 @@ services:
       timeout: 20s
       retries: 3
     depends_on:
+      # 等 etcd 和 MinIO 健康后，再启动 Milvus。
       etcd:
         condition: service_healthy
       minio:
         condition: service_healthy
 
+  # MongoDB 是普通文档数据库。
+  # 你的项目用它保存聊天历史、会话记录、文件元数据等结构化业务数据。
   mongo:
     image: mongo:latest
     ports:
+      # MongoDB Compass 和 Python 都可以连接：mongodb://127.0.0.1:27017
       - "27017:27017"
     volumes:
+      # 保存 MongoDB 数据，避免容器重建后数据库丢失。
       - mongo_data:/data/db
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
@@ -72,6 +100,9 @@ services:
       retries: 3
 
 volumes:
+  # Docker 管理的持久化数据卷。
+  # docker compose down 不会删除这些数据卷。
+  # 如果执行 docker compose down -v，下面这些数据会被删除。
   etcd_data:
     driver: local
   minio_data:
