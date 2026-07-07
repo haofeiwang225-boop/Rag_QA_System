@@ -54,7 +54,7 @@ def step_3_llm_item_name_and_rewrite_query(original_query, history_chats):
 
     prompt = load_prompt(
         "rewritten_query_and_itemnames",
-        histort_text=history_text,
+        history_text=history_text,
         query=original_query,
     )
 
@@ -73,6 +73,7 @@ def step_3_llm_item_name_and_rewrite_query(original_query, history_chats):
 def step_4_query_milvus_item_names(item_names):
     item_names = _as_list(item_names)
     if not item_names:
+        logger.warning("LLM未提取到item_name，跳过商品名Milvus确认")
         return []
 
     collection_name = milvus_config.item_name_collection
@@ -98,7 +99,7 @@ def step_4_query_milvus_item_names(item_names):
             client=milvus_client,
             collection_name=collection_name,
             reqs=reqs,
-            ranker_weights=(0.5, 0.5),
+            ranker_weights=(0.6, 0.4),
             norm_score=True,
         )
 
@@ -119,13 +120,14 @@ def step_4_query_milvus_item_names(item_names):
     return final_result
 
 
-def step_5_confirmed_and_optional_item_name(query_milvus_results, threshold=0.85, option_limit=2):
+def step_5_confirmed_and_optional_item_name(query_milvus_results, threshold=0.75, option_limit=2):
     confirmed_item_names = []
     options_item_names = []
     confirmed_set = set()
     option_set = set()
 
     for item_meta in query_milvus_results or []:
+        extracted_name = item_meta.get("extracted", "")
         matches = item_meta.get("matches", [])
         matches = sorted(matches, key=lambda x: x.get("score", 0), reverse=True)
         if not matches:
@@ -135,7 +137,7 @@ def step_5_confirmed_and_optional_item_name(query_milvus_results, threshold=0.85
         top_name = top_match.get("item_name")
         top_score = top_match.get("score", 0)
 
-        if top_name and top_score >= threshold:
+        if top_name and (top_score >= threshold or top_name == extracted_name):
             if top_name not in confirmed_set:
                 confirmed_item_names.append(top_name)
                 confirmed_set.add(top_name)
@@ -201,10 +203,16 @@ def node_item_name_confirm(state: QueryGraphState):
 
     extracted_item_names = item_names_and_rewritten_query["item_name"]
     rewritten_query = item_names_and_rewritten_query["rewritten_query"]
+    logger.info(f"LLM提取item_names={extracted_item_names}, rewritten_query={rewritten_query}")
+    search_item_names = extracted_item_names or [rewritten_query or original_query]
+    if not extracted_item_names:
+        logger.warning(f"LLM未提取到item_name，使用问题文本兜底检索Milvus：{search_item_names}")
 
     try:
-        query_milvus_results = step_4_query_milvus_item_names(extracted_item_names)
+        query_milvus_results = step_4_query_milvus_item_names(search_item_names)
+        logger.info(f"Milvus商品名确认原始结果={query_milvus_results}")
         item_results = step_5_confirmed_and_optional_item_name(query_milvus_results)
+        logger.info(f"Milvus商品名确认分类结果={item_results}")
     except Exception as e:
         logger.warning(f"商品名Milvus确认失败，使用LLM提取结果继续: {e}")
         item_results = {
@@ -213,7 +221,7 @@ def node_item_name_confirm(state: QueryGraphState):
         }
 
     state = step_6_deal_list(state, item_results, history_chats, rewritten_query)
-    final_item_names = state.get("item_names", extracted_item_names)
+    final_item_names = state.get("item_names") or extracted_item_names
 
     try:
         save_chat_message(
@@ -249,3 +257,28 @@ def node_item_name_confirm(state: QueryGraphState):
         "history": history_chats,
         "answer": state.get("answer", ""),
     }
+
+if __name__ == "__main__":
+    # 模拟输入状态
+    mock_state = {
+        "session_id": "test_session_003",
+        "original_query": "H3C LA2608 室内无线网关",
+        "is_stream": False
+    }
+
+    print(">>> 开始测试 node_item_name_confirm...")
+    try:
+        # 运行节点
+        result_state = node_item_name_confirm(mock_state)
+
+        print("\n>>> 测试完成！最终状态:")
+        print(json.dumps(result_state, indent=2, ensure_ascii=False))
+
+        # 简单验证
+        if result_state.get("item_names"):
+            print(f"\n[PASS] 成功提取并确认商品名: {result_state['item_names']}")
+        else:
+            print(f"\n[WARN] 未确认到商品名 (可能是向量库无匹配或LLM未提取)")
+
+    except Exception as e:
+        print(f"\n[FAIL] 测试运行出错: {e}")

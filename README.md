@@ -114,7 +114,8 @@ git push
   用 Attu。                                                                           
                                                                                       
   浏览器打开你的 Attu 地址，一般是：                                                                                                                            
-  http://127.0.0.1:8000                                                               
+  http://127.0.0.1:8000  
+                                                               
  Docker 里 Attu 映射的端口。                                                                                                                 
   进去后连接 Milvus：                                                                                                                                                
   Milvus Address: 127.0.0.1:19530 
@@ -208,12 +209,6 @@ http://127.0.0.1:8009/import
 ```text
 POST http://127.0.0.1:8009/upload
 ```
-
-
-
-
-
-
 
 ### 5. 查看 MinIO 文件
 MinIO 是对象存储，用来看上传文件、图片、Markdown 等对象数据。

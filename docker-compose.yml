@@ -99,6 +99,18 @@ services:
       timeout: 10s
       retries: 3
 
+  # Attu 是 Milvus 的 Web 可视化管理工具。
+  # 用它可以在浏览器里查看 Milvus 的 collection、字段、向量数据和查询结果。
+  # 浏览器地址：http://127.0.0.1:8001
+  attu:
+    image: zilliz/attu:latest
+    ports:
+      # Attu 容器内部页面端口是 3000，映射到本机 8001。
+      - "8001:3000"
+    depends_on:
+      milvus-standalone:
+        condition: service_healthy
+
 volumes:
   # Docker 管理的持久化数据卷。
   # docker compose down 不会删除这些数据卷。
