@@ -160,7 +160,7 @@ def create_hybrid_search_requests(dense_vector, sparse_vector, dense_params=None
         data=[dense_vector],
         anns_field="dense_vector",
         param=dense_params,
-        expr=expr,
+        expr=expr,# 混合查询的查询条件
         limit=limit
     )
 
