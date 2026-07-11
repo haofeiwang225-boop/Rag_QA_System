@@ -327,3 +327,18 @@ POST http://127.0.0.1:8008/query
 ```
 
 
+每次重新打开终端后，按这个顺序来。
+                                                 
+  1. 进入项目目录                                
+                                                 
+  cd D:\Python基础\dataset_rag                   
+                                                 
+  2. 激活虚拟环境                                
+                                                 
+  .\.venv\Scripts\Activate.ps1                   
+                                                 
+  3. 看到前面出现 (.venv) 就说明成功了           
+                                                 
+  类似这样：                                     
+                                                 
+  (.venv) PS D:\Python基础\dataset_rag> 
