@@ -53,7 +53,7 @@ def node_rrf(state):
     add_running_task(state["session_id"], sys._getframe().f_code.co_name, state.get("is_stream"))
 
     #取同源的数据
-    embedding_chunks = state["embedding_chunks"]
+    embedding_chunks = state["embedding_chunks"] #原问题的混合向量检索结果
     hyde_chunks = state["hyde_embedding_chunks"] #根据llm给出的答案和问题 取向量数据库中搜素
 
     #数据合并
