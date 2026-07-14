@@ -168,6 +168,6 @@ async def delete_history(session_id: str):
     }
 
 if __name__ == "__main__":
-    #与chat.html结合就是, 提问问题返回东西的.
+    #与chat.html结合就是, 提问问题返回东西
     uvicorn.run(app, host="127.0.0.1", port=8008)
 
